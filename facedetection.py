@@ -1,5 +1,5 @@
 # app.py
-from flask import Flask, render_template, Response, request, redirect, url_for
+from flask import Flask, render_template, Response, request, jsonify
 from facenet_pytorch import MTCNN
 from deepface import DeepFace
 import cv2
@@ -69,7 +69,7 @@ def insert_result_into_database(result):
 
             # Convert gender and dominant_emotion to strings
             gender = str(gender)
-            dominant_emotion = str(dominant_emotion)
+                dominant_emotion = str(dominant_emotion)
 
             # Insert data into the database
             if age is not None:
@@ -166,14 +166,19 @@ def detect_faces():
 
     video_capture.release()
 
-    # Redirect to the login page after face detection
-    return redirect(url_for('detect_and_redirect'))
+    # The redirect line has been removed as per the task to implement.
     
 @app.route('/video_feed')
 def video_feed():
     # Return a response with the streaming video feed
     return Response(detect_faces(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
+@app.route('/face_detection_status')
+def face_detection_status():
+    # Implement the logic to check the status of face detection
+    # For example, return a JSON response indicating the status
+    # This is a placeholder implementation
+    return jsonify({"status": "Face detection completed"})
 
 @app.route('/')
 def index():
