@@ -165,6 +165,9 @@ def detect_faces():
                b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
 
     video_capture.release()
+
+    # Redirect to the login page after face detection
+    return redirect(url_for('detect_and_redirect'))
     
 @app.route('/video_feed')
 def video_feed():
@@ -193,6 +196,13 @@ def login():
         else:
             return "Invalid username or password"
     return render_template('login.html')
+
+@app.route('/detect_and_redirect')
+def detect_and_redirect():
+    # Add any additional processing logic here if needed
+    
+    # Redirect to the login page after face detection
+    return redirect(url_for('login'))
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
