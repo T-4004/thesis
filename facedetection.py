@@ -1,5 +1,5 @@
 # app.py
-from flask import Flask, render_template, Response, request, redirect, url_for
+from flask import Flask, render_template, Response, request, jsonify
 from facenet_pytorch import MTCNN
 from deepface import DeepFace
 import cv2
@@ -166,14 +166,17 @@ def detect_faces():
 
     video_capture.release()
 
-    # Redirect to the login page after face detection
-    return redirect(url_for('detect_and_redirect'))
-    
+    # Removed the redirect to the login page after face detection
+
 @app.route('/video_feed')
 def video_feed():
     # Return a response with the streaming video feed
     return Response(detect_faces(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
+@app.route('/face_detection_status')
+def face_detection_status():
+    # Return the status of the face detection process
+    return jsonify({"status": "Face detection completed"})
 
 @app.route('/')
 def index():
