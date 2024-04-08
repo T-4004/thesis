@@ -1,5 +1,5 @@
 # app.py
-from flask import Flask, render_template, Response, request, redirect, url_for
+from flask import Flask, jsonify, render_template, Response, request, redirect, url_for
 from facenet_pytorch import MTCNN
 from deepface import DeepFace
 import cv2
@@ -131,7 +131,12 @@ def save_base64_image_and_convert_to_jpeg(base64_data):
     save_base64_and_image_to_database(base64_data, jpeg_data)
 
 
+# Define a global variable to track whether the video feed has finished
+video_feed_finished = False
+
 def detect_faces():
+    global video_feed_finished  # Use the global variable
+
     video_capture = cv2.VideoCapture(0)  # Access the webcam (change to the appropriate device index if necessary)
 
     start_time = time.time()  # Record the start time
@@ -140,6 +145,8 @@ def detect_faces():
 
         # Check if 5 seconds have elapsed
         if time.time() - start_time > 5:
+            # Set the flag to indicate that video feed is finished
+            video_feed_finished = True
             # Stop processing frames after 5 seconds
             break
 
@@ -166,18 +173,36 @@ def detect_faces():
 
     video_capture.release()
 
-    # Redirect to the login page after face detection
-    return redirect(url_for('detect_and_redirect'))
-    
-@app.route('/video_feed')
+
+
+# Route for video feed
+@app.route('/video_feed', methods=['GET', 'POST'])
 def video_feed():
-    # Return a response with the streaming video feed
-    return Response(detect_faces(), mimetype='multipart/x-mixed-replace; boundary=frame')
+    global video_feed_finished
+
+    # Check if the video feed is finished
+    if video_feed_finished:
+        # If finished, redirect to the login page
+        return redirect(url_for('login'))
+
+    if request.method == 'GET':
+        # Render the index.html template with the video feed
+        return render_template('index.html')
+    elif request.method == 'POST':
+        
+        # Return the streaming video feed
+        def generate():
+            for frame in detect_faces():
+                yield (b'--frame\r\n'
+                       b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+
+        return Response(generate(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
 @app.route('/')
 def index():
     return redirect(url_for('login'))
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -197,12 +222,6 @@ def login():
             return "Invalid username or password"
     return render_template('login.html')
 
-@app.route('/detect_and_redirect')
-def detect_and_redirect():
-    # Add any additional processing logic here if needed
-    
-    # Redirect to the login page after face detection
-    return redirect(url_for('login'))
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
