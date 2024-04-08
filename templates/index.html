@@ -12,6 +12,17 @@
         <img id="video-feed" src="{{ url_for('video_feed') }}" alt="Video Feed">
     </div>
    
+    <!-- Add a button that appears after the video feed is done -->
+    <div id="refresh-button-container" style="display: none;">
+        <button onclick="refreshPage()">log in</button>
+    </div>
+
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script>
+        // JavaScript function to refresh the page
+        function refreshPage() {
+            location.reload();
+        }
+    </script>
 </body>
 </html>
